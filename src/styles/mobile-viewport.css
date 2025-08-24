@@ -1,0 +1,129 @@
+/* Mobile Viewport Fixes for Bottom Browser UI */
+
+/* Use these classes to handle mobile browser bottom navigation bars */
+
+.mobile-viewport-fix {
+  /* Primary solution: Use dynamic viewport height */
+  height: 100vh;
+  height: 100dvh; /* Accounts for browser UI dynamically */
+  height: 100svh; /* Small viewport height - always excludes browser UI */
+  
+  /* Fallback for older browsers */
+  height: calc(var(--viewport-height, 100vh));
+}
+
+/* Container that needs to account for safe areas */
+.mobile-safe-container {
+  /* Padding for safe areas */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-top: env(safe-area-inset-top, 0);
+  padding-left: env(safe-area-inset-left, 0);
+  padding-right: env(safe-area-inset-right, 0);
+}
+
+/* For scrollable content that shouldn't go under bottom bar */
+.mobile-scroll-container {
+  /* Max height accounting for safe areas */
+  max-height: calc(100vh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0));
+  max-height: calc(100dvh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fixed bottom elements (like pagination) */
+.mobile-fixed-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* Push content above safe area */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  /* Add extra padding for better visibility */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+}
+
+/* Alternative sticky bottom that respects safe areas */
+.mobile-sticky-bottom {
+  position: sticky;
+  bottom: 0;
+  /* Ensure it stays above the browser bar */
+  margin-bottom: env(safe-area-inset-bottom, 0);
+  /* Background to cover content behind it */
+  background: var(--background);
+  /* Shadow for better visibility */
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* iOS specific fixes */
+@supports (-webkit-touch-callout: none) {
+  .mobile-viewport-fix {
+    /* iOS specific height calculation */
+    min-height: -webkit-fill-available;
+  }
+  
+  .mobile-scroll-container {
+    /* iOS specific max-height */
+    max-height: -webkit-fill-available;
+  }
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
+  /* Apply mobile-specific adjustments only on actual mobile devices */
+  .mobile-viewport-responsive {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  
+  /* Ensure content doesn't get cut off */
+  .mobile-content-container {
+    /* Add extra bottom padding on mobile */
+    padding-bottom: calc(env(safe-area-inset-bottom, 0) + 60px);
+  }
+}
+
+/* Utility classes for JavaScript detection */
+.has-bottom-bar {
+  /* When JS detects a bottom bar */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0) + 20px);
+}
+
+.is-ios-safari {
+  /* iOS Safari specific adjustments */
+  height: -webkit-fill-available;
+}
+
+/* Debug helper - shows safe area boundaries */
+.debug-safe-areas {
+  outline: 2px dashed red;
+  outline-offset: calc(-1 * env(safe-area-inset-bottom, 0));
+}
+
+/* Table-specific mobile fixes */
+.mobile-table-wrapper {
+  /* Ensure table container respects viewport */
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: calc(100vh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0));
+  max-height: calc(100dvh - env(safe-area-inset-bottom, 0) - env(safe-area-inset-top, 0));
+}
+
+.mobile-table-scroll {
+  /* Scrollable area for table content */
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  /* Ensure bottom content is visible */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.mobile-table-footer {
+  /* Footer/pagination that stays visible */
+  flex-shrink: 0;
+  background: var(--background);
+  border-top: 1px solid var(--border);
+  /* Push above browser UI */
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  /* Add extra space for better UX */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0) + 12px);
+}

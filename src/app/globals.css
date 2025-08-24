@@ -1,0 +1,216 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 142.1 76.2% 36.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 20 14.3% 4.1%;
+    --foreground: 0 0% 95%;
+    --card: 24 9.8% 10%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 142.1 70.6% 45.3%;
+    --primary-foreground: 144.9 80.4% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 142.4 71.8% 29.2%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    /* Prevent text size adjustment on orientation change */
+    -webkit-text-size-adjust: 100%;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    /* Ensure full viewport height on mobile */
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
+  }
+  
+  /* Prevent overscroll bounce on iOS */
+  html,
+  body {
+    overscroll-behavior-y: none;
+  }
+  
+  /* CSS Custom Properties for mobile viewport handling */
+  :root {
+    --viewport-height: 100vh;
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-left: env(safe-area-inset-left, 0px);
+    --safe-area-right: env(safe-area-inset-right, 0px);
+  }
+  
+  /* Improve mobile scrolling performance */
+  .overflow-auto,
+  [class*="overflow-auto"] {
+    -webkit-overflow-scrolling: touch;
+    /* Create a new layer to prevent repaints */
+    will-change: transform;
+  }
+  
+  /* Mobile viewport handling classes */
+  .mobile-viewport-container {
+    /* Use dynamic viewport height for better mobile support */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height - accounts for browser UI */
+    /* Fallback for browsers that don't support dvh */
+    height: calc(var(--viewport-height, 100vh));
+  }
+  
+  /* Adjust for mobile browsers with bottom navigation bars */
+  .mobile-safe-area {
+    padding-bottom: var(--safe-area-bottom);
+  }
+  
+  /* Specific handling for iOS Safari */
+  .is-ios .mobile-viewport-container,
+  .is-mobile-safari .mobile-viewport-container {
+    /* iOS specific adjustments */
+    height: -webkit-fill-available;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* When bottom bar is detected */
+  .has-bottom-bar .mobile-viewport-container {
+    /* Add padding to account for the bottom bar */
+    padding-bottom: calc(var(--safe-area-bottom) + 20px);
+  }
+  
+  /* Data table specific adjustments */
+  .mobile-table-container {
+    /* Ensure table doesn't extend beyond safe area */
+    max-height: calc(100vh - var(--safe-area-bottom) - var(--safe-area-top));
+    max-height: calc(100dvh - var(--safe-area-bottom) - var(--safe-area-top));
+  }
+  
+  /* Fix for sticky elements within scrollable containers on mobile */
+  @media (max-width: 768px) {
+    .overflow-auto {
+      /* Hardware acceleration */
+      transform: translateZ(0);
+      -webkit-transform: translateZ(0);
+    }
+    
+    /* Prevent sticky positioning issues in scrollable containers */
+    .overflow-auto .sticky {
+      position: relative !important;
+    }
+  }
+  
+  /* Custom utility for safe area padding */
+  @supports (padding: max(0px)) {
+    .pt-safe {
+      padding-top: max(env(safe-area-inset-top), 1rem);
+    }
+    .pb-safe {
+      padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+    }
+  }
+}
+
+/* Custom animations */
+@layer utilities {
+  @keyframes success-scale {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes check-mark {
+    0% {
+      stroke-dashoffset: 100;
+    }
+    100% {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes confetti {
+    0% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(var(--rotate));
+      opacity: 0;
+    }
+  }
+
+  .animate-success-scale {
+    animation: success-scale 0.5s ease-out;
+  }
+
+  .animate-check-mark {
+    stroke-dasharray: 100;
+    animation: check-mark 0.5s ease-out 0.2s forwards;
+  }
+
+  .animate-confetti {
+    animation: confetti 3s ease-out forwards;
+  }
+
+  @keyframes ripple {
+    0% {
+      transform: scale(0);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(4);
+      opacity: 0;
+    }
+  }
+
+  .animate-ripple {
+    animation: ripple 0.6s ease-out;
+  }
+} 
