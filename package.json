@@ -85,7 +85,7 @@
     "eslint-config-next": "15.3.2",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
-    "next": "15.3.2",
+    "next": "15.4.7",
     "preset": "link:@shadcn/ui/preset",
     "tailwindcss": "^4",
     "tsx": "^4.19.4",
