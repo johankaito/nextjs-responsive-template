@@ -1,27 +1,8 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { JOB_CATEGORIES } from "@/types/drizzle"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
-}
-
-export function getJobCategoryOptions() {
-  return JOB_CATEGORIES.map(category => ({
-    label: formatJobCategory(category),
-    value: category,
-  }));
-}
-
-export function formatJobCategory(category: string): string {
-  const categoryMap: Record<string, string> = {
-    'GENERAL_MAINTENANCE': 'General Maintenance',
-    'ELECTRICAL': 'Electrical',
-    'PLUMBING': 'Plumbing',
-    'OFF_PLATFORM': 'Off Platform'
-  };
-  
-  return categoryMap[category] || category;
 }
 
 export function formatFileSize(bytes: number): string {

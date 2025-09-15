@@ -4,19 +4,19 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { useSupabase } from '@/components/SupabaseContext';
 import { useRouter } from 'next/navigation';
-import { type TofilUser } from "@/types/drizzle";
+import { type Profile } from "@/types/drizzle";
 
 export type UserContextType = {
   supabaseUser: SupabaseUser | null;
-  tofilUser: TofilUser | null;
-  setUser: (user: { supabaseUser: SupabaseUser | null; tofilUser: TofilUser | null }) => void;
+  profile: Profile | null;
+  setUser: (user: { supabaseUser: SupabaseUser | null; profile: Profile | null }) => void;
   isLoading: boolean;
   signOut: () => Promise<void>;
 };
 
 const UserContext = createContext<UserContextType>({
   supabaseUser: null,
-  tofilUser: null,
+  profile: null,
   setUser: () => {},
   isLoading: true,
   signOut: async () => {},
@@ -24,116 +24,89 @@ const UserContext = createContext<UserContextType>({
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
-  const [tofilUser, setTofilUser] = useState<TofilUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { client: supabase } = useSupabase();
   const router = useRouter();
 
-  const setUser = ({ supabaseUser, tofilUser }: { supabaseUser: SupabaseUser | null; tofilUser: TofilUser | null }) => {
+  const setUser = ({ supabaseUser, profile }: { supabaseUser: SupabaseUser | null; profile: Profile | null }) => {
     setSupabaseUser(supabaseUser);
-    setTofilUser(tofilUser);
+    setProfile(profile);
   };
 
-  // Sign out function
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser({ supabaseUser: null, tofilUser: null });
-    router.push('/login');
+    setIsLoading(true);
+    try {
+      await supabase.auth.signOut();
+      setSupabaseUser(null);
+      setProfile(null);
+      router.push('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Session and user fetching logic
+  // Fetch user profile when supabase user changes
   useEffect(() => {
-    (async () => {
+    const fetchUserProfile = async (supabaseUser: SupabaseUser) => {
       try {
-        setIsLoading(true);
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (error || !user) {
-          setSupabaseUser(null);
-          setTofilUser(null);
-          setIsLoading(false);
-          return;
-        }
-        setSupabaseUser(user);
-        setIsLoading(false);
-      } catch {
-        console.error("DEBUG::error in checkSession");
-        setIsLoading(false);
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", supabaseUser.id)
+          .single();
+
+        setProfile(profile);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setProfile(null);
       }
-    })();
-    // Listen for session changes and refresh user context
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
+    };
+
+    if (supabaseUser) {
+      fetchUserProfile(supabaseUser);
+    } else {
+      setProfile(null);
+    }
+  }, [supabaseUser, supabase]);
+
+  // Listen to auth state changes
+  useEffect(() => {
+    setIsLoading(true);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
         setSupabaseUser(session.user);
       } else {
         setSupabaseUser(null);
-        setTofilUser(null);
+        setProfile(null);
       }
+      setIsLoading(false);
     });
+
     return () => {
-      listener.subscription.unsubscribe();
+      subscription.unsubscribe();
     };
   }, [supabase]);
 
-  // Fetch user profile when supabaseUser changes
-  useEffect(() => {
-    if (!supabaseUser) {
-      setTofilUser(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      setIsLoading(true);
-      try {
-        // Fetch user profile
-        const { data: profile } = await supabase
-          .from("users")
-          .select("*")
-          .eq("email", supabaseUser.email ?? '')
-          .single();
-        
-        // Transform the profile to include manager_location_id
-        let tofilProfile: TofilUser | null = null;
-        if (profile) {
-          tofilProfile = { ...profile };
-          
-          // If user is a manager, fetch their location
-          if (profile.type === 'MANAGER') {
-            const { data: managerLocation } = await supabase
-              .from("manager_locations")
-              .select("location_id")
-              .eq("user_id", profile.id)
-              .single();
-            
-            if (managerLocation) {
-              tofilProfile.manager_location_id = managerLocation.location_id;
-            }
-          }
-        }
-        if (!cancelled) {
-          setTofilUser(tofilProfile);
-        }
-      } catch (error: unknown) {
-        const err = error as Error;
-        console.error("DEBUG::error in fetchUserProfile", { error: err.message });
-        if (!cancelled) {
-          setTofilUser(null);
-        }
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [supabaseUser, supabase]);
-
   return (
-    <UserContext.Provider value={{ supabaseUser, tofilUser, setUser, isLoading, signOut }}>
+    <UserContext.Provider value={{
+      supabaseUser,
+      profile,
+      setUser,
+      isLoading,
+      signOut,
+    }}>
       {children}
     </UserContext.Provider>
   );
 }
 
-export function useUser() {
-  return useContext(UserContext);
-} 
+export const useUser = () => {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error("useUser must be used within UserProvider");
+  }
+  return context;
+};

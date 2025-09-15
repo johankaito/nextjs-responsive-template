@@ -21,7 +21,7 @@ interface AuthState {
 
 export function useAuth(options: UseAuthOptions = {}) {
   const { requiredRole, redirectTo = '/login' } = options;
-  const { tofilUser, isLoading: userLoading, signOut, supabaseUser } = useUser();
+  const { profile, isLoading: userLoading, signOut, supabaseUser } = useUser();
   const { client: supabase } = useSupabase();
   const router = useRouter();
   const [authState, setAuthState] = useState<AuthState>({
@@ -31,13 +31,14 @@ export function useAuth(options: UseAuthOptions = {}) {
 
   // Optional: role-based redirect
   useEffect(() => {
-    if (!userLoading && requiredRole && tofilUser && tofilUser.type !== requiredRole) {
-      router.push('/not-authorized');
-    }
-    if (!userLoading && requiredRole && !tofilUser) {
+    // Note: Role-based access control needs to be implemented based on your profile schema
+    // Example: if (!userLoading && requiredRole && profile && profile.role !== requiredRole) {
+    //   router.push('/not-authorized');
+    // }
+    if (!userLoading && requiredRole && !profile) {
       router.push(redirectTo);
     }
-  }, [userLoading, requiredRole, tofilUser, redirectTo, router]);
+  }, [userLoading, requiredRole, profile, redirectTo, router]);
 
   // Sign in with email and password
   const signInWithPassword = useCallback(async (email: string, password: string) => {
@@ -177,7 +178,7 @@ export function useAuth(options: UseAuthOptions = {}) {
 
   return {
     // User state
-    user: tofilUser,
+    user: profile,
     supabaseUser,
     isLoading: userLoading || authState.isLoading,
     error: authState.error,

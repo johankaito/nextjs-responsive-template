@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSupabase } from "@/components/SupabaseContext";
 import { useAuth } from "@/hooks/useAuth";
 import { 
@@ -19,7 +18,6 @@ import {
   Sun
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { cn } from "@/lib/utils";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -207,7 +205,7 @@ export default function DashboardPage() {
   );
 }
 
-function DashboardContent({ activeTab, user }: { activeTab: string; user: any }) {
+function DashboardContent({ activeTab, user }: { activeTab: string; user: { supabaseUser: { email?: string } | null } }) {
   const content = {
     home: (
       <div className="space-y-6">

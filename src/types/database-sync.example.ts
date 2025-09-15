@@ -8,7 +8,7 @@
 // Example imports - replace with your actual paths
 // @ts-expect-error - This file doesn't exist yet, run: npx supabase gen types typescript
 import { Database as SupabaseDatabase } from './supabase-generated';
-import { User as DrizzleUser } from './drizzle';
+import { Profile as DrizzleProfile } from './drizzle';
 import { camelizeKeys, decamelizeKeys } from 'humps';
 import { createClientSupabaseClient } from '@/lib/supabase/client';
 
@@ -17,9 +17,9 @@ type AssertCompatible<T, U> = T extends U ? U extends T ? true : false : false;
 
 // Verify types match at compile time (this is a compile-time check)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-type UserCompatible = AssertCompatible<
-  DrizzleUser,
-  SupabaseDatabase['public']['Tables']['users']['Row']
+type ProfileCompatible = AssertCompatible<
+  DrizzleProfile,
+  SupabaseDatabase['public']['Tables']['profiles']['Row']
 >;
 
 // Runtime conversion helpers
@@ -34,13 +34,13 @@ export function toSupabase<T>(data: T): T {
 }
 
 // Example usage in hooks/services
-export async function getUsers() {
+export async function getProfiles() {
   const supabase = createClientSupabaseClient();
-  
+
   const { data } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*');
-  
+
   // Convert Supabase response to app types
   return data ? data.map(fromSupabase) : [];
 }

@@ -12,7 +12,7 @@ export const profiles = pgTable("profiles", {
   email: text("email").notNull(),
   fullName: text("full_name"),
   avatarUrl: text("avatar_url"),
-  metadata: jsonb("metadata").$type<Record<string, any>>(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>(),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
